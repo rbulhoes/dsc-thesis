@@ -125,9 +125,9 @@ def updt_D(it: int64, S_obs: float64[:,:], M_X: float64[:,:,:],
 
 
 ########################### Creating objects to store the MCMC samples
-burn_in = 5000
-num_iter = 15000 + burn_in
-thin = 15
+burn_in = 1000
+num_iter = 10000 + burn_in
+thin = 10
 smp_size = int((num_iter - burn_in)/thin)
 
 e_phi = [0 for k in range(0, smp_size)]
@@ -139,16 +139,16 @@ e_D = [np.zeros((2, N)) for k in range(0, smp_size)]
 
 
 ########################### Initial values for MCMC estimation
-phi_prev = 2.0
-V_prev = 2.0
+phi_prev = 1.0
+V_prev = 1.0
 Sigma_prev = 2.0*np.identity(q)
 Beta_prev = np.zeros((T + 1, p, q))
 D_prev = np.copy(S)
-delta_phi = 65.0
+delta_phi = 100.0 # 2.0 if T = 10, 12.0 if T = 100, and 100.0 if T = 1000 
 
 
 
-########################### Metropolis-within-Gibbs algorithm
+########################### Hybrid algorithm
 # ind will vary between 0 and smp_size - 1 (i.e. k = 1, ..., K)
 ind = 0 
 acc_phi, acc_D = 0, np.zeros((2, N))
@@ -212,7 +212,8 @@ for j in range(1, num_iter + 1):
                           phi_usage = phi_curr,
                           V_usage = V_curr,
                           D_usage = D_prev)
-  
+
+#  D_curr = np.copy(D)  
   D_curr = updt_D(it = seed_v + j,
                   S_obs = S,
                   M_X = X,
