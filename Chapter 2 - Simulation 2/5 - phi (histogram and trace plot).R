@@ -13,7 +13,6 @@ smp_size <- 1000
 N <- 16
 
 true_phi <- 0.5
-# mod_phi <- 0.7152195467127559
 
 MA_phi <- read.table("MA/e_phi.txt", head = FALSE, sep = ",")
 colnames(MA_phi) <- c("Iteration", "Value")
