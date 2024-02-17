@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 12 17:26:50 2021
+
+@author: rodri
+"""
+
 ########################### Python libraries
 
 import numpy as np
@@ -109,121 +116,90 @@ def logpdf_IN(x: float64, mean: float64, sigma2: float64) -> float64:
 
 ########################### Data generation
 
-# Sites in unit square
-S = np.vstack([[1/5, 1/5], [4/5, 4/5], [1/5, 4/5], [4/5, 1/5],
-                           [1/5, 2/5], [1/5, 3/5], 
-               [2/5, 1/5], [2/5, 2/5], [2/5, 3/5], [2/5, 4/5],
-               [3/5, 1/5], [3/5, 2/5], [3/5, 3/5], [3/5, 4/5],
-                           [4/5, 2/5], [4/5, 3/5]]).T
-S_i = np.array([[0.7, 0.5],
-                [0.5, 0.7],
-                [0.3, 0.3]]).T
-S_tot = np.hstack([S, S_i])
+# Sites in [0, 1]²
+S = np.vstack([[0.0, 0.0], [1.0, 1.0],
+               [0.0, 1/3], [0.0, 2/3], [0.0, 1.0],
+               [1/3, 0.0], [1/3, 1/3], [1/3, 2/3], [1/3, 1.0],
+               [1/2, 1/2],
+               [2/3, 0.0], [2/3, 1/3], [2/3, 2/3], [2/3, 1.0],
+               [1.0, 0.0], [1.0, 1/3], [1.0, 2/3]]).T
 
 # The number of sites and the number of replications (or times)
-N, N_i, N_tot = S.shape[1], S_i.shape[1], S_tot.shape[1]
-T, T_p = 100, 10
-T_tot = T + T_p
-p, q = 2, 2 
-seed_v = 500
+N = S.shape[1]
+T = 100 # Run with 10, 100 and 1000
+p, q = 2, 2
+seed_v = 1000
 
-V = 1.0
+D = np.zeros((2, N))
+D[:,0:2] = S[:,0:2]
+
+psi = -2*log(0.05)/np.max(distance.cdist(S.T, S.T, metric = 'sqeuclidean'))
+R_d = nb_BR(matrix = S,
+            need_transp = True,
+            squared = True,
+            scalar = psi)
+R_12 = R_d[0:2,0:2]
+R_3N = R_d[2:18,2:18]
+R_star = R_d[2:18,0:2]
+S_cond = S[:,2:(N + 1)] + np.matmul(D[:,0:2] - S[:,0:2],
+                                    np.linalg.inv(R_12) @ R_star.T)
+R_cond = R_3N - np.matmul(R_star, np.linalg.inv(R_12) @ R_star.T)
+
+sigma2d = np.array([[0.500, 0.000],
+                    [0.000, 0.500]])
+ 
+D[:,2:(N + 1)] = rMVN(n = 1,
+                      avg = S_cond,
+                      left = sigma2d,
+                      right = R_cond,
+                      n_seed = seed_v)
+
+V = 0.4
 a_V, b_V = 0.001, 0.001
 
-Sigma = np.array([[1.00, 0.80],
-                  [0.80, 1.00]])
+Sigma = np.array([[1.0, 0.7],
+                  [0.7, 1.0]])
 a_Sigma, b_Sigma = 0.001, 0.001*np.identity(q)
 
-phi = 0.5
+phi = 0.1
 a_phi, b_phi = 0.001, 0.001
 
-### B and B_i are specified by an anisotropic structure
-xi_x = 1
-xi_y = 3
-Lambda1 = np.diag([xi_x, xi_y])
-Sh_x = 0.05
-Sh_y = 0.00
-Lambda2 = np.array([[1,    Sh_x],
-                   [Sh_y,    1]])
-eta = -pi/6
-Lambda3 = np.array([[np.cos(eta), -np.sin(eta)],
-                    [np.sin(eta),  np.cos(eta)]])
-Lambda = Lambda1 @ Lambda2 @ Lambda3
-A = Lambda.T @ Lambda
-u = np.zeros(2)
-D = np.zeros((2, N))
-D_i = np.zeros((2, N_i))
-for n in range(1, N_tot + 1):
-  if n <= 2:
-    D[:,n - 1] = S[:,n - 1]
-  elif n >= 3 and n <= N:
-    D[:,n - 1] = Lambda @ S[:,n - 1] + u
-  else:
-    D_i[:,N_tot - n - 1] = Lambda @ S_i[:,N_tot - n - 1] + u
-
-B_aug = nb_BR(matrix = np.hstack([D, D_i]),
-              need_transp = True, scalar = phi)
+# Using the true deformations to specify B
+B = nb_BR(matrix = D, need_transp = True, scalar = phi)
 
 M0, C0 = np.zeros((p, q)), 1.0*np.identity(p)
 W = 1.0*np.identity(p)
-Beta_tot = np.zeros((T_tot + 1, p, q))
-Beta, Beta_p = np.zeros((T + 1, p, q)), np.zeros((T_p, p, q))
+Beta = np.zeros((T + 1, p, q))
 
-G = np.zeros((T_tot + 1, p, p))
-for t in range(0, T_tot + 1):
+G = np.zeros((T + 1, p, p))
+for t in range(0, T + 1):
   if t == 0:
-    G[t] = np.identity(p)
-    Beta_tot[t] = rMVN(n = 1,
-                        avg = M0,
-                        left = V*C0,
-                        right = Sigma,
-                        n_seed = seed_v + t)
+    Beta[t] = rMVN(n = 1,
+                   avg = M0,
+                   left = V*C0,
+                   right = Sigma,
+                   n_seed = seed_v + t)
   else:
     G[t] = np.identity(p)
-    Beta_tot[t] = rMVN(avg = np.matmul(G[t], Beta_tot[t-1]),
-                       left = V*W,
-                       right = Sigma,
-                       n = 1,
-                       n_seed = seed_v + t)
+    Beta[t] = rMVN(avg = np.matmul(G[t], Beta[t-1]),
+                   left = V*W,
+                   right = Sigma,
+                   n = 1,
+                   n_seed = seed_v + t)
 
-for t in range(0, T_tot + 1):
-  if t <= T:
-    Beta[t] = Beta_tot[t]
-  else:
-    Beta_p[t - T - 1] = Beta_tot[t] 
-
-# X
-X, X_i = np.zeros((T_tot + 1, N, p)), np.zeros((T_tot + 1, N_i, p))
-for t in range(1, T_tot + 1):
+# Likelihood function
+Y, X = np.zeros((T + 1, N, q)), np.zeros((T + 1, N, p))
+for t in range(1, T + 1):
   X[t] = np.vstack([np.ones(N),
                     uniform.rvs(loc = 0,
                                 scale = 1,
                                 size = N,
                                 random_state = seed_v + t)]).T
-  X_i[t] = np.vstack([np.ones(N_i),
-                      uniform.rvs(loc = 0,
-                                  scale = 1,
-                                  size = N_i,
-                                  random_state = seed_v + t)]).T
-  
-# Response matrices
-Y_aug = np.zeros((T_tot + 1, N + N_i, q))
-for t in range(1, T_tot + 1):
-  Y_aug[t] = rMVN(n = 1,
-                  avg = np.matmul(np.vstack([X[t], X_i[t]]), Beta_tot[t]),
-                  left = V*B_aug,
-                  right = Sigma,
-                  n_seed = seed_v + t)
-
-Y, Y_i = np.zeros((T+1,N,q)), np.zeros((T+1,N_i,q))
-Y_p, Y_p_i = np.zeros((T_p,N,q)), np.zeros((T_p,N_i,q))
-for t in range(1, T_tot + 1):
-  if t <= T:
-    Y[t] = Y_aug[t][0:N,:]
-    Y_i[t] = Y_aug[t][N:N_tot,:]
-  else:
-    Y_p[t - T - 1] = Y_aug[t][0:N,:]
-    Y_p_i[t - T - 1] = Y_aug[t][N:N_tot,:] 
+  Y[t] = rMVN(n = 1,
+              avg = np.matmul(X[t], Beta[t]),
+              left = V*B,
+              right = Sigma,
+              n_seed = seed_v + t)
 
 # R correlation matrix
 def comp_R(S_obs, psi_obs):
@@ -238,7 +214,7 @@ def comp_R(S_obs, psi_obs):
   return R_N
 
 # Configuration of the distortion level
-psi_usage = 15.0
+psi_usage = 5.0
 R_usg = comp_R(S_obs = S, psi_obs = psi_usage)
 sigma2d_usg = np.cov(S)
 
@@ -331,7 +307,7 @@ def log_krnl_phi(par: float64, init_a_phi: float64, init_b_phi: float64,
   else:
     log_prior = (init_a_phi - 1)*log(par) - init_b_phi*par
     B_usage = nb_BR(matrix = D_usage, need_transp = True, scalar = par)
-    log_det_B_usage = np.linalg.slogdet(B_usage)[1]
+    log_det_B_usage = log(np.linalg.det(B_usage))
     aux = np.zeros((q_obs, q_obs))
     left = V_usage * B_usage
     inv_left, inv_right = np.linalg.inv(left), np.linalg.inv(Sigma_usage)
@@ -377,14 +353,12 @@ def updt_phi(it: int64, init_a_phi: float64, init_b_phi: float64,
                                                     V_usage = V_usage,
                                                     Sigma_usage = Sigma_usage)
   log_rho = log_num - log_den
-  log_eta = min([0, log_rho])
+  log_alpha = min([0, log_rho])
   
-  if isfinite(log_eta) and log_u <= log_eta:
+  if isfinite(log_alpha) and log_u <= log_alpha:
     return phi_prop
   else:
     return phi_usage
-
-start = timer()
 
 @njit
 def FF(init_M0: float64[:,:], init_C0: float64[:,:], M_Y: float64[:,:,:],
@@ -483,7 +457,7 @@ def log_krnl_D(par: float64[:,:], S_obs: float64[:,:], M_X: float64[:,:,:],
   log_prior = -0.5*np.trace(krnl_prior)
 
   B_usage = nb_BR(matrix = par, need_transp = True, scalar = phi_usage)
-  log_det_B_usage = np.linalg.slogdet(B_usage)[1]
+  log_det_B_usage = log(np.linalg.det(B_usage))
 
   aux = np.zeros((q_obs, q_obs))
   left = V_usage * B_usage
