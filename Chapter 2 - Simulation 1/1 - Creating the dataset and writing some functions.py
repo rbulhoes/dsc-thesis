@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Oct 12 17:26:50 2021
-
-@author: rodri
-"""
-
 ########################### Python libraries
 
 import numpy as np
