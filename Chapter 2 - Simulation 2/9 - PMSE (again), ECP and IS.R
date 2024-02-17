@@ -194,18 +194,6 @@ for(t in 1:K) {
 
 ##### Diagnostics
 
-# MAD
-median(abs(MA_stats_Y1_i[,"Mean"] - MA_stats_Y1_i[,"True"]))
-median(abs(MI_stats_Y1_i[,"Mean"] - MI_stats_Y1_i[,"True"]))
-median(abs(MA_stats_Y2_i[,"Mean"] - MA_stats_Y2_i[,"True"]))
-median(abs(MI_stats_Y2_i[,"Mean"] - MI_stats_Y2_i[,"True"]))
-
-# MSD
-mean((MA_stats_Y1_i[,"Mean"] - MA_stats_Y1_i[,"True"])^2)
-mean((MI_stats_Y1_i[,"Mean"] - MI_stats_Y1_i[,"True"])^2)
-mean((MA_stats_Y2_i[,"Mean"] - MA_stats_Y2_i[,"True"])^2)
-mean((MI_stats_Y2_i[,"Mean"] - MI_stats_Y2_i[,"True"])^2)
-
 # ECP
 MA_stats_Y1_i[,"Coverage"] = MA_stats_Y1_i[,"True"] >= MA_stats_Y1_i[,"LI"] &
   MA_stats_Y1_i[,"True"] <= MA_stats_Y1_i[,"LS"]
@@ -248,79 +236,3 @@ mean(interval_score(true_values = MI_stats_Y2_i[,"True"],
                     lower = MI_stats_Y2_i[,"LI"],
                     upper = MI_stats_Y2_i[,"LS"],
                     interval_range = 95))
-
-
-# 1 to 180, 181 to 360
-t_ini <- 1
-t_fim <- 50
-
-MA_data_1 <- subset(x = MA_stats_Y1_i,
-                    subset = Time >= t_ini & Time <= t_fim)
-MA_data_2 <- subset(x = MA_stats_Y2_i,
-                    subset = Time >= t_ini & Time <= t_fim)
-MI_data_1 <- subset(x = MI_stats_Y1_i,
-                    subset = Time >= t_ini & Time <= t_fim)
-MI_data_2 <- subset(x = MI_stats_Y2_i,
-                    subset = Time >= t_ini & Time <= t_fim)
-MA_resp1 <- ggplot(data = MA_data_1,
-                   aes(x = Time, y = True)) +
-  geom_point(size = 1.5, aes(color = Coverage)) +
-  scale_color_manual(breaks = c(FALSE, TRUE),
-                     values=c("red", "blue")) +
-  geom_line(aes(y = LI), linetype = 2) +
-  geom_line(aes(y = LS), linetype = 2) +
-  geom_line(aes(y = Mean), color = "gold") +
-  labs(title = expression(paste(italic(M)[A])),
-       y = "Values") +
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(size = 20)) +
-  ylim(min(MA_data_1[,2:5], MI_data_1[,2:5]),
-       max(MA_data_1[,2:5], MI_data_1[,2:5]))
-MI_resp1 <- ggplot(data = MI_data_1,
-                   aes(x = Time, y = True)) +
-  geom_point(size = 1.5, aes(color = Coverage)) +
-  scale_color_manual(breaks = c(FALSE, TRUE),
-                     values=c("red", "blue")) +
-  geom_line(aes(y = LI), linetype = 2) +
-  geom_line(aes(y = LS), linetype = 2) +
-  geom_line(aes(y = Mean), color = "gold") +
-  labs(title = expression(paste(italic(M)[I])),
-       y = "Values") +
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(size = 20)) +
-  ylim(min(MA_data_1[,2:5], MI_data_1[,2:5]),
-       max(MA_data_1[,2:5], MI_data_1[,2:5]))
-MA_resp2 <- ggplot(data = MA_data_2,
-                   aes(x = Time, y = True)) +
-  geom_point(size = 1.5, aes(color = Coverage)) +
-  scale_color_manual(breaks = c(FALSE, TRUE),
-                     values=c("red", "blue")) +
-  geom_line(aes(y = LI), linetype = 2) +
-  geom_line(aes(y = LS), linetype = 2) +
-  geom_line(aes(y = Mean), color = "gold") +
-  labs(title = expression(paste(italic(M)[A])),
-       y = "Values") +
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(size = 20)) +
-  ylim(min(MA_data_2[,2:5], MI_data_2[,2:5]),
-       max(MA_data_2[,2:5], MI_data_2[,2:5]))
-MI_resp2 <- ggplot(data = MI_data_2,
-                   aes(x = Time, y = True)) +
-  geom_point(size = 1.5, aes(color = Coverage)) +
-  scale_color_manual(breaks = c(FALSE, TRUE),
-                     values=c("red", "blue")) +
-  geom_line(aes(y = LI), linetype = 2) +
-  geom_line(aes(y = LS), linetype = 2) +
-  geom_line(aes(y = Mean), color = "gold") +
-  labs(title = expression(paste(italic(M)[I])),
-       y = "Values") +
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(size = 20)) +
-  ylim(min(MA_data_2[,2:5], MI_data_2[,2:5]),
-       max(MA_data_2[,2:5], MI_data_2[,2:5]))
-
-# US Legal - Landscape
-ggarrange(MA_resp1, MI_resp1,
-          ncol = 1, nrow = 2, legend = "none")
-ggarrange(MA_resp2, MI_resp2,
-          ncol = 1, nrow = 2, legend = "none")
