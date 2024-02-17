@@ -467,3 +467,30 @@ def updt_Beta(it: int64, init_M0: float64[:,:], init_C0: float64[:,:],
                             n_seed = it)
   
   return sample
+
+@njit(parallel = True)
+def log_krnl_D(par: float64[:,:], S_obs: float64[:,:], M_X: float64[:,:,:],
+               M_Y: float64[:,:,:], R_usage: float64[:,:],
+               sigma2d_usage: float64[:,:], Sigma_usage: float64[:,:],
+               V_usage: float64, Beta_usage: float64[:,:,:],
+               phi_usage: float64) -> float64:
+  T_obs = M_Y.shape[0] - 1
+  q_obs = M_Y.shape[2]    
+  dif = par - S_obs
+  inv_R_usage = np.linalg.inv(R_usage)
+  inv_sigma2d_usage = np.linalg.inv(sigma2d_usage)
+  krnl_prior = (dif.T @ inv_sigma2d_usage) @ (dif @ inv_R_usage)
+  log_prior = -0.5*np.trace(krnl_prior)
+
+  B_usage = nb_BR(matrix = par, need_transp = True, scalar = phi_usage)
+  log_det_B_usage = np.linalg.slogdet(B_usage)[1]
+
+  aux = np.zeros((q_obs, q_obs))
+  left = V_usage * B_usage
+  inv_left, inv_right = np.linalg.inv(left), np.linalg.inv(Sigma_usage)
+  for t in prange(1, T_obs + 1):
+    dif_t = M_Y[t] - (M_X[t] @ Beta_usage[t])
+    aux += (dif_t.T @ inv_left) @ (dif_t @ inv_right)
+  log_LH = - 0.5*np.trace(aux) - 0.5*T_obs*q_obs*log_det_B_usage
+  
+  return log_prior + log_LH
