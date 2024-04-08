@@ -45,7 +45,7 @@ e_Y_p_MI = read.table("MI/e_Y_p.txt",
                       sep = ",")
 colnames(e_Y_p_MI) = c("Iteration", "Time", "Site", "Resp.1", "Resp.2")
 
-n <- 14 # 14
+n <- 14 # 14 (explored in my thesis), ? (histogram)
 
 MA_stats_Y1 = data.frame(1:(K+K_p), matrix(data = 0, nrow = K+K_p, ncol = 5))
 MA_stats_Y2 = data.frame(1:(K+K_p), matrix(data = 0, nrow = K+K_p, ncol = 5))
@@ -99,40 +99,40 @@ for(t in 1:(K+K_p)) {
     set_MA = subset(x = e_Y_p_MA,
                     select = c("Iteration", "Resp.1", "Resp.2"),
                     subset = Site == n & Time == t - K)
-    MA_stats_Y1[t,"LI"] = quantile(x = set_MA[750:smp_size, "Resp.1"],
+    MA_stats_Y1[t,"LI"] = quantile(x = set_MA[1:smp_size, "Resp.1"],
                                    probs = 0.025)
-    MA_stats_Y2[t,"LI"] = quantile(x = set_MA[750:smp_size, "Resp.2"],
+    MA_stats_Y2[t,"LI"] = quantile(x = set_MA[1:smp_size, "Resp.2"],
                                    probs = 0.025)
-    MA_stats_Y1[t,"Mean"] = mean(set_MA[750:smp_size, "Resp.1"])
-    MA_stats_Y2[t,"Mean"] = mean(set_MA[750:smp_size, "Resp.2"])
+    MA_stats_Y1[t,"Mean"] = mean(set_MA[1:smp_size, "Resp.1"])
+    MA_stats_Y2[t,"Mean"] = mean(set_MA[1:smp_size, "Resp.2"])
     MA_stats_Y1[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.1"),
                                    subset = Site == n & Time == t - K)
     MA_stats_Y2[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.2"),
                                    subset = Site == n & Time == t - K)
-    MA_stats_Y1[t,"LS"] = quantile(x = set_MA[750:smp_size, "Resp.1"],
+    MA_stats_Y1[t,"LS"] = quantile(x = set_MA[1:smp_size, "Resp.1"],
                                    probs = 0.975)
-    MA_stats_Y2[t,"LS"] = quantile(x = set_MA[750:smp_size, "Resp.2"],
+    MA_stats_Y2[t,"LS"] = quantile(x = set_MA[1:smp_size, "Resp.2"],
                                    probs = 0.975)
     set_MI = subset(x = e_Y_p_MI,
                     select = c("Iteration", "Resp.1", "Resp.2"),
                     subset = Site == n & Time == t - K)
-    MI_stats_Y1[t,"LI"] = quantile(x = set_MI[750:smp_size, "Resp.1"],
+    MI_stats_Y1[t,"LI"] = quantile(x = set_MI[1:smp_size, "Resp.1"],
                                    probs = 0.025)
-    MI_stats_Y2[t,"LI"] = quantile(x = set_MI[750:smp_size, "Resp.2"],
+    MI_stats_Y2[t,"LI"] = quantile(x = set_MI[1:smp_size, "Resp.2"],
                                    probs = 0.025)
-    MI_stats_Y1[t,"Mean"] = mean(set_MI[750:smp_size, "Resp.1"])
-    MI_stats_Y2[t,"Mean"] = mean(set_MI[750:smp_size, "Resp.2"])
+    MI_stats_Y1[t,"Mean"] = mean(set_MI[1:smp_size, "Resp.1"])
+    MI_stats_Y2[t,"Mean"] = mean(set_MI[1:smp_size, "Resp.2"])
     MI_stats_Y1[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.1"),
                                    subset = Site == n & Time == t - K)
     MI_stats_Y2[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.2"),
                                    subset = Site == n & Time == t - K)
-    MI_stats_Y1[t,"LS"] = quantile(x = set_MI[750:smp_size, "Resp.1"],
+    MI_stats_Y1[t,"LS"] = quantile(x = set_MI[1:smp_size, "Resp.1"],
                                    probs = 0.975)
-    MI_stats_Y2[t,"LS"] = quantile(x = set_MI[750:smp_size, "Resp.2"],
+    MI_stats_Y2[t,"LS"] = quantile(x = set_MI[1:smp_size, "Resp.2"],
                                    probs = 0.975)
   }
 }
@@ -222,3 +222,132 @@ ggarrange(MA_resp1, MI_resp1,
           ncol = 1, nrow = 2, legend = "none")
 ggarrange(MA_resp2, MI_resp2,
           ncol = 1, nrow = 2, legend = "none")
+
+## Comparing ranges
+
+for (t in 1:K) {
+  # range_Y1_MA <- MA_stats_Y1[t, "LS"] - MA_stats_Y1[t, "LI"]
+  # range_Y1_MI <- MA_stats_Y1[t, "LS"] - MA_stats_Y1[t, "LI"]
+  # test_Y1 <- range_Y1_MA > range_Y1_MI
+  diff_Y1_MA <- abs(MA_stats_Y1[t, "Mean"] - MA_stats_Y1[t, "True"])
+  diff_Y1_MI <- abs(MI_stats_Y1[t, "Mean"] - MI_stats_Y1[t, "True"])
+  test_Y1 <- diff_Y1_MA < diff_Y1_MI
+  # range_Y2_MA <- MA_stats_Y2[t, "LS"] - MA_stats_Y2[t, "LI"]
+  # range_Y2_MI <- MA_stats_Y2[t, "LS"] - MA_stats_Y2[t, "LI"]
+  # test_Y2 <- range_Y2_MA > range_Y2_MI
+  diff_Y2_MA <- abs(MA_stats_Y2[t, "Mean"] - MA_stats_Y2[t, "True"])
+  diff_Y2_MI <- abs(MI_stats_Y2[t, "Mean"] - MI_stats_Y2[t, "True"])
+  test_Y2 <- diff_Y2_MA < diff_Y2_MI
+  if (test_Y1 & test_Y2) {
+    print(paste(t, "yes"))
+  } else {
+    print(paste(t, "no"))
+  }
+}
+
+
+## Histograms for the observed time t <- t0, the gauged site n <- 14,
+## and both response variables, by model (anisotropic and isotropic models)
+t_Y1 <- 14
+t_Y2 <- 2
+# ggarrange(MA_resp1, MA_resp2, ncol = 1, nrow = 2, legend = "none")
+
+set_hist_MA_Y1 <- subset(x = e_Y_MA,
+                         subset = Time == t_Y1 & Site == n,
+                         select = Resp.1)
+set_hist_MI_Y1 <- subset(x = e_Y_MI,
+                         subset = Time == t_Y1 & Site == n,
+                         select = Resp.1)
+
+minimo1 <- min(min(set_hist_MA_Y1), min(set_hist_MI_Y1))
+maximo1 <- max(max(set_hist_MA_Y1), max(set_hist_MI_Y1))
+
+hist_MA_Y1 <- ggplot(set_hist_MA_Y1, aes(x = Resp.1)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.1,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MA_stats_Y1[t_Y1, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MA_stats_Y1[t_Y1, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MA_stats_Y1[t_Y1, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MA_stats_Y1[t_Y1, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 1", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo1, maximo1) + ylim(0, 25)
+
+hist_MI_Y1 <- ggplot(set_hist_MI_Y1, aes(x = Resp.1)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.1,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MI_stats_Y1[t_Y1, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MI_stats_Y1[t_Y1, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MI_stats_Y1[t_Y1, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MI_stats_Y1[t_Y1, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 1", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo1, maximo1) + ylim(0, 25)
+
+set_hist_MA_Y2 <- subset(x = e_Y_MA,
+                         subset = Time == t_Y2 & Site == n,
+                         select = Resp.2)
+set_hist_MI_Y2 <- subset(x = e_Y_MI,
+                         subset = Time == t_Y2 & Site == n,
+                         select = Resp.2)
+
+minimo2 <- min(min(set_hist_MA_Y2), min(set_hist_MI_Y2))
+maximo2 <- max(max(set_hist_MA_Y2), max(set_hist_MI_Y2))
+
+hist_MA_Y2 <- ggplot(set_hist_MA_Y2, aes(x = Resp.2)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.2,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MA_stats_Y2[t_Y2, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MA_stats_Y2[t_Y2, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MA_stats_Y2[t_Y2, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MA_stats_Y2[t_Y2, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 2", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo2, maximo2) + ylim(0, 25)
+
+hist_MI_Y2 <- ggplot(set_hist_MI_Y2, aes(x = Resp.2)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.2,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MI_stats_Y2[t_Y2, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MI_stats_Y2[t_Y2, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MI_stats_Y2[t_Y2, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MI_stats_Y2[t_Y2, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 2", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo2, maximo2) + ylim(0, 25)
+
+# Salvar 4 x 6 in. - Landscape
+ggarrange(hist_MA_Y1, hist_MI_Y1, ncol = 2, nrow = 1)
+ggarrange(hist_MA_Y2, hist_MI_Y2, ncol = 2, nrow = 1)
