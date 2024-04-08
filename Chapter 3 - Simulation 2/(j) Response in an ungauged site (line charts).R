@@ -234,3 +234,107 @@ ggarrange(MA_resp1, MI_resp1,
           ncol = 1, nrow = 2, legend = "none")
 ggarrange(MA_resp2, MI_resp2,
           ncol = 1, nrow = 2, legend = "none")
+
+# Histograms for the observed time t <- t0, the second ungauged site n <- 3,
+# and both response variables, by model (anisotropic and isotropic models)
+t0 <- 25
+
+set_hist_MA_Y1 <- subset(x = e_Y_i_MA,
+                         subset = Time == t0 & Site == 3,
+                         select = Resp.1)
+set_hist_MI_Y1 <- subset(x = e_Y_i_MI,
+                         subset = Time == t0 & Site == 3,
+                         select = Resp.1)
+
+minimo1 <- min(min(set_hist_MA_Y1), min(set_hist_MI_Y1))
+maximo1 <- max(max(set_hist_MA_Y1), max(set_hist_MI_Y1))
+
+hist_MA_Y1 <- ggplot(set_hist_MA_Y1, aes(x = Resp.1)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.1,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MA_stats_Y1_i[t0, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MA_stats_Y1_i[t0, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MA_stats_Y1_i[t0, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MA_stats_Y1_i[t0, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 1", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo1, maximo1) + ylim(0, 25)
+
+hist_MI_Y1 <- ggplot(set_hist_MI_Y1, aes(x = Resp.1)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.1,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MI_stats_Y1_i[t0, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MI_stats_Y1_i[t0, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MI_stats_Y1_i[t0, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MI_stats_Y1_i[t0, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 1", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo1, maximo1) + ylim(0, 25)
+
+set_hist_MA_Y2 <- subset(x = e_Y_i_MA,
+                         subset = Time == t0 & Site == 3,
+                         select = Resp.2)
+set_hist_MI_Y2 <- subset(x = e_Y_i_MI,
+                         subset = Time == t0 & Site == 3,
+                         select = Resp.2)
+
+minimo2 <- min(min(set_hist_MA_Y2), min(set_hist_MI_Y2))
+maximo2 <- max(max(set_hist_MA_Y2), max(set_hist_MI_Y2))
+
+hist_MA_Y2 <- ggplot(set_hist_MA_Y2, aes(x = Resp.2)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.2,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MA_stats_Y2_i[t0, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MA_stats_Y2_i[t0, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MA_stats_Y2_i[t0, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MA_stats_Y2_i[t0, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 2", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo2, maximo2) + ylim(0, 25)
+
+hist_MI_Y2 <- ggplot(set_hist_MI_Y2, aes(x = Resp.2)) + 
+  geom_histogram(color = "gray50",
+                 fill = "snow1",
+                 mapping=aes(x = Resp.2,
+                             y = after_stat(count)/sum(after_stat(count))*100),
+                 bins = 15) +
+  geom_vline(xintercept = MI_stats_Y2_i[t0, "True"], 
+             colour = "blue", linetype="dotdash") +
+  geom_vline(xintercept = MI_stats_Y2_i[t0, "Mean"], 
+             colour = "gold") +
+  geom_vline(xintercept = MI_stats_Y2_i[t0, "LI"],
+             linetype="dashed") +
+  geom_vline(xintercept = MI_stats_Y2_i[t0, "LS"],
+             linetype="dashed") +
+  labs(x = "Response 2", y = "%") +
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 20)) +
+  xlim(minimo2, maximo2) + ylim(0, 25)
+
+# Salvar 4 x 6 in. - Landscape
+ggarrange(hist_MA_Y1, hist_MI_Y1, ncol = 2, nrow = 1)
+ggarrange(hist_MA_Y2, hist_MI_Y2, ncol = 2, nrow = 1)
