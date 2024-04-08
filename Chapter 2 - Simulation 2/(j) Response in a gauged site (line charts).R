@@ -45,7 +45,7 @@ e_Y_p_MI = read.table("MI/e_Y_p.txt",
                       sep = ",")
 colnames(e_Y_p_MI) = c("Iteration", "Time", "Site", "Resp.1", "Resp.2")
 
-n <- 2 # 14
+n <- 1
 
 MA_stats_Y1 = data.frame(1:(K+K_p), matrix(data = 0, nrow = K+K_p, ncol = 5))
 MA_stats_Y2 = data.frame(1:(K+K_p), matrix(data = 0, nrow = K+K_p, ncol = 5))
