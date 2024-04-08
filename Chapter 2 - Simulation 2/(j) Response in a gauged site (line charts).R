@@ -99,40 +99,40 @@ for(t in 1:(K+K_p)) {
     set_MA = subset(x = e_Y_p_MA,
                     select = c("Iteration", "Resp.1", "Resp.2"),
                     subset = Site == n & Time == t - K)
-    MA_stats_Y1[t,"LI"] = quantile(x = set_MA[750:smp_size, "Resp.1"],
+    MA_stats_Y1[t,"LI"] = quantile(x = set_MA[1:smp_size, "Resp.1"],
                                    probs = 0.025)
-    MA_stats_Y2[t,"LI"] = quantile(x = set_MA[750:smp_size, "Resp.2"],
+    MA_stats_Y2[t,"LI"] = quantile(x = set_MA[1:smp_size, "Resp.2"],
                                    probs = 0.025)
-    MA_stats_Y1[t,"Mean"] = mean(set_MA[750:smp_size, "Resp.1"])
-    MA_stats_Y2[t,"Mean"] = mean(set_MA[750:smp_size, "Resp.2"])
+    MA_stats_Y1[t,"Mean"] = mean(set_MA[1:smp_size, "Resp.1"])
+    MA_stats_Y2[t,"Mean"] = mean(set_MA[1:smp_size, "Resp.2"])
     MA_stats_Y1[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.1"),
                                    subset = Site == n & Time == t - K)
     MA_stats_Y2[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.2"),
                                    subset = Site == n & Time == t - K)
-    MA_stats_Y1[t,"LS"] = quantile(x = set_MA[750:smp_size, "Resp.1"],
+    MA_stats_Y1[t,"LS"] = quantile(x = set_MA[1:smp_size, "Resp.1"],
                                    probs = 0.975)
-    MA_stats_Y2[t,"LS"] = quantile(x = set_MA[750:smp_size, "Resp.2"],
+    MA_stats_Y2[t,"LS"] = quantile(x = set_MA[1:smp_size, "Resp.2"],
                                    probs = 0.975)
     set_MI = subset(x = e_Y_p_MI,
                     select = c("Iteration", "Resp.1", "Resp.2"),
                     subset = Site == n & Time == t - K)
-    MI_stats_Y1[t,"LI"] = quantile(x = set_MI[750:smp_size, "Resp.1"],
+    MI_stats_Y1[t,"LI"] = quantile(x = set_MI[1:smp_size, "Resp.1"],
                                    probs = 0.025)
-    MI_stats_Y2[t,"LI"] = quantile(x = set_MI[750:smp_size, "Resp.2"],
+    MI_stats_Y2[t,"LI"] = quantile(x = set_MI[1:smp_size, "Resp.2"],
                                    probs = 0.025)
-    MI_stats_Y1[t,"Mean"] = mean(set_MI[750:smp_size, "Resp.1"])
-    MI_stats_Y2[t,"Mean"] = mean(set_MI[750:smp_size, "Resp.2"])
+    MI_stats_Y1[t,"Mean"] = mean(set_MI[1:smp_size, "Resp.1"])
+    MI_stats_Y2[t,"Mean"] = mean(set_MI[1:smp_size, "Resp.2"])
     MI_stats_Y1[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.1"),
                                    subset = Site == n & Time == t - K)
     MI_stats_Y2[t,"True"] = subset(x = Y_p,
                                    select = c("Resp.2"),
                                    subset = Site == n & Time == t - K)
-    MI_stats_Y1[t,"LS"] = quantile(x = set_MI[750:smp_size, "Resp.1"],
+    MI_stats_Y1[t,"LS"] = quantile(x = set_MI[1:smp_size, "Resp.1"],
                                    probs = 0.975)
-    MI_stats_Y2[t,"LS"] = quantile(x = set_MI[750:smp_size, "Resp.2"],
+    MI_stats_Y2[t,"LS"] = quantile(x = set_MI[1:smp_size, "Resp.2"],
                                    probs = 0.975)
   }
 }
